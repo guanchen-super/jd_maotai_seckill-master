@@ -2,6 +2,7 @@
 import time
 import requests
 import json
+import re
 
 from datetime import datetime
 from jd_logger import logger
@@ -28,10 +29,15 @@ class Timer(object):
         从京东服务器获取时间毫秒
         :return:
         """
+        pattern = "serverTime = new Date\(\'(.*?)\'\).getTime\(\);"
         url = 'https://a.jd.com//ajax/queryServerData.html'
         ret = requests.get(url).text
-        js = json.loads(ret)
-        return int(js["serverTime"])
+        timeString = re.findall(pattern, ret)[0]
+        #转换成时间数组
+        timeArray = time.strptime(timeString, "%Y/%m/%d %H:%M:%S")
+        #转换成时间戳
+        timestamp = time.mktime(timeArray)
+        return int(timestamp)
 
     def local_time(self):
         """
